@@ -10,7 +10,7 @@ interface ToggleGroup {
 
 const ToggleGroup: React.FunctionComponent<ToggleGroup> = ({ onChange, className, value = '', children}) => {
 
-  const [currentButton, setCurrentButton] = useState<string | number | undefined>(0);
+  const [currentButton, setCurrentButton] = useState<string | number | undefined>(value);
 
   const setChildState = (e: React.MouseEvent<HTMLButtonElement>, isActive: boolean) => {
     let data = e.currentTarget.dataset;
@@ -18,8 +18,8 @@ const ToggleGroup: React.FunctionComponent<ToggleGroup> = ({ onChange, className
     onChange && onChange(data.value, isActive);
   }
 
-  const getStatus = (value: any) => {
-    let status = currentButton === value;
+  const getStatus = (val: any) => {
+    let status = currentButton === val;
     return status;
   }
 

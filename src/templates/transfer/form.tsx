@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react"
 import Input from "../../components/inputs/input"
 import Button from '../../components/button/button'
+import Message from '../../components/message/message'
 import { EthLogo } from '../../components/icons';
 import ToggleButton from '../../components/button/toggleButton'
 import ToggleGroup from '../../components/button/toggleGroup'
-import { useGetAccountName, useGetPublicAddress, useGetAccountBalance } from '../../hooks/accountDetails'
+import { useGetPublicAddress, useGetAccountBalance } from '../../hooks/accountDetails'
 
 // types interface
 interface TransferForm {
@@ -16,9 +17,12 @@ const TransferForm: React.FunctionComponent<TransferForm> = ({ onSubmit }) => {
   // states & variables
   const [unit, setUnit] = useState('eth');
   const [amountValue, setamountValue] = useState<any>(0);
-  const [recipient, setRecipient] = useState<string>('');
-  const [assetType, setAssetType] = useState<string>('reth');
+  const [recipient, setRecipient] = useState('');
+  const [assetType, setAssetType] = useState('reth');
+  const [balanceMessage, setBalanceMessage] = useState(false);
+  const [zeroTransfer, setZeroTransfer] = useState(false);
   const wallet = useGetAccountBalance();
+  const walletPublicAddress = useGetPublicAddress();
   const transferForm = useRef(null);
 
   // functions & handlers
@@ -45,23 +49,28 @@ const TransferForm: React.FunctionComponent<TransferForm> = ({ onSubmit }) => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (amountValue > 0 && recipient !== '') {
-      if (assetType === 'reth' && amountValue < getTokenBalance('reth')) {
-        // return true
-      } else if (assetType === 'weenus' && amountValue < getTokenBalance('weenus')) {
-        // return true
-      }
-    }
     const transferDetails = {
       token: assetType,
       amount: amountValue,
-      sender: '0xb701FdCc9Db05d5AD0d7B6aAbb42DBf09ec28Ad0',
+      sender: walletPublicAddress,
       recipient: recipient,
       fee: '0.0006rBTC'
     }
-    onSubmit(transferDetails);
+    if (amountValue > 0 && recipient !== '') {
+      setZeroTransfer(false);
+      if (assetType === 'reth' && amountValue <= getTokenBalance('reth')) {
+        onSubmit(transferDetails);
+        setBalanceMessage(false);
+      } else if (assetType === 'weenus' && amountValue <= getTokenBalance('weenus')) {
+        onSubmit(transferDetails);
+        setBalanceMessage(false);
+      }
+      setBalanceMessage(true);
+    } else {
+      setZeroTransfer(true);
+      setBalanceMessage(false);
+    }
   }
-  
 
   // returned elements
   return (
@@ -85,6 +94,7 @@ const TransferForm: React.FunctionComponent<TransferForm> = ({ onSubmit }) => {
       <Input 
         type="number"
         label="amount:" 
+        step="any"
         min={0}
         value={amountValue}
         unit={unit}
@@ -97,13 +107,15 @@ const TransferForm: React.FunctionComponent<TransferForm> = ({ onSubmit }) => {
         onInput={handleAmountInput}
       />
       {/* amount buttons */}
-      <ToggleGroup value={amountValue} onChange={handleAmountSelection} className="grid grid-cols-5 gap-0 mb-7">
+      <ToggleGroup value={amountValue} onChange={handleAmountSelection} className="grid grid-cols-5 gap-0 mb-2">
         <ToggleButton value={0.10} className="select-none text-base text-dark-blue border border-dark-blue rounded-l-lg font-bold" activeClass="bg-dark-blue [color:#E9EAE9!important]">10%</ToggleButton>
         <ToggleButton value={0.25} className="select-none text-base text-dark-blue border border-dark-blue font-bold" activeClass="bg-dark-blue [color:#E9EAE9!important]">25%</ToggleButton>
         <ToggleButton value={0.50} className="select-none text-base text-dark-blue border border-dark-blue font-bold" activeClass="bg-dark-blue [color:#E9EAE9!important]">50%</ToggleButton>
         <ToggleButton value={0.75} className="select-none text-base text-dark-blue border border-dark-blue font-bold" activeClass="bg-dark-blue [color:#E9EAE9!important]">75%</ToggleButton>
         <ToggleButton value={1.0} className="select-none text-base text-dark-blue border border-dark-blue rounded-r-lg font-bold" activeClass="bg-dark-blue [color:#E9EAE9!important]">100%</ToggleButton>
       </ToggleGroup>
+      <Message visible={balanceMessage} text="꘎ not enough balance!" className="" />
+      <Message visible={zeroTransfer} text="꘎ the amount should be bigger than '0'" className="" />
       {/* recipient address */}
       <Input 
         label="send to:" 
@@ -112,7 +124,7 @@ const TransferForm: React.FunctionComponent<TransferForm> = ({ onSubmit }) => {
         placeholder="Type or Paste address"
         className="mb-7"
         pattern="^0x[a-fA-F0-9]{40}$"
-        labelClass="capitalize text-white mb-2" 
+        labelClass="capitalize text-white mt-7 mb-2" 
         inputClass="text-center px-4 rounded-lg text-main-bg font-bold text-lg" 
         required
         onInput={handleRecipientInput}
