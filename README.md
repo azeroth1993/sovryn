@@ -2,6 +2,8 @@
 
 A crypto transfer application for sending "eRTH" and "WEENUS" tokens to another public wallet.
 
+Checkout the live app: https://sovryn-5es.pages.dev/
+
 
 ## Technologies used
 
