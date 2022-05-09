@@ -1,6 +1,6 @@
 # Crypto Transfer App
 
-A crypto transfer application ofr sending "eRTH" and "WEENUS" tokens to another public wallet.
+A crypto transfer application for sending "eRTH" and "WEENUS" tokens to another public wallet.
 
 
 ## Technologies used
